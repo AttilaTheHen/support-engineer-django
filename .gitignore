@@ -1,0 +1,12 @@
+build/
+uploads/
+*.pyc
+*.swp
+.DS_Store
+MANIFEST
+dist
+.env
+node_modules
+*.log
+.idea
+.venv
