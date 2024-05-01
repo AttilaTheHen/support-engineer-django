@@ -1,25 +1,22 @@
-FROM python:3.11-slim-buster
-ENV LANG C.UTF-8
+ARG PYTHON_VERSION=3.12-slim-bullseye
 
-# Python settings
-ENV PIP_DEFAULT_TIMEOUT=100 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+FROM python:${PYTHON_VERSION}
 
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV ALLOWED_HOSTS $ALLOWED_HOSTS
 
-RUN apt-get -y update && apt-get -y autoremove
+RUN mkdir -p /code
 
-RUN mkdir /app
+WORKDIR /code
 
-WORKDIR /app
+COPY requirements.txt /tmp/requirements.txt
+RUN set -ex && \
+    pip install --upgrade pip && \
+    pip install -r /tmp/requirements.txt && \
+    rm -rf /root/.cache/
+COPY . /code
 
-RUN apt-get install -y python python-pip python-dev && apt-get clean
+EXPOSE 8000
 
-COPY . .
-COPY requirements.txt .
-
-RUN pip install -r requirements.txt
-
-ENV ENV prod
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "worksample.wsgi"]
